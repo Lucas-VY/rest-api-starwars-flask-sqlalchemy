@@ -30,7 +30,7 @@ class User(db.Model):
         }
 ########
 
-    
+"""    
 class Favorite_Characters(db.Model):
     __tablename__ = 'favorite_characters'
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
@@ -99,7 +99,7 @@ class Favorite_Vehicles(db.Model):
         return {
             "user_id": self.user_id,
             "id_vehicles": self.id_vehicles,
-        }
+        }"""
 ########
 
 
@@ -111,7 +111,6 @@ class Characters(db.Model):
     gender = db.Column(db.String(250), nullable=False)
     height = db.Column(db.String(250), nullable=False)
     hair_color = db.Column(db.String(250), nullable=False)
-    homeworld = db.Column(db.String(250), db.ForeignKey("planet_id_resident.id"))
 
     def save(self):
         db.session.add(self)
@@ -146,7 +145,6 @@ class Characters(db.Model):
 class Planets(db.Model):
     __tablename__ = 'planets'
     id = db.Column(db.Integer, primary_key=True)
-    planet_id_resident = db.Column(db.Integer, db.ForeignKey("homeworld.id"), primary_key=True)
     name = db.Column(db.String(250), nullable=False)
     climate = db.Column(db.String(250), nullable=False)
     population = db.Column(db.String(250), nullable=False)

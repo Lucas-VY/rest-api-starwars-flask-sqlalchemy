@@ -1,6 +1,6 @@
-from flask import Flask, json, jsonify, request, render_template
-from flask_migrate import Migrate, MigrateCommand
+from flask import Flask, jsonify, request, render_template
 from flask_script import Manager
+from flask_migrate import Migrate, MigrateCommand
 from flask_cors import CORS
 from models import db, User, Characters, Planets, Vehicles
 
