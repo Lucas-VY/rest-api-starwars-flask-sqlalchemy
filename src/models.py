@@ -1,8 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
-##instancia del modelo sql alchemy
+
 db = SQLAlchemy()
 
-
+### user uno a muchos (characters, vehicles y planets FAVS)
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -10,31 +10,74 @@ class User(db.Model):
     password = db.Column(db.String(100), nullable=False, unique=False )
     email = db.Column(db.String(100), nullable=False, unique=True)
 
+    ## RELACION CON LA TABLA PIVOTTE DE UN(USER) A MUCHOS(FAV)
+    fav_characters = db.relationship('Favorite_Characters', cascade="all, delete", backref="user")
+    fav_planets = db.relationship('Favorite_Planets', cascade="all, delete", backref="user")
+    fav_vehicles = db.relationship('Favorite_Vehicles', cascade="all, delete", backref="user")
+    
+    ## metodo para guardar en base de dato
     def save(self):
         db.session.add(self)
         db.session.commit()
-
+    #update base de dato de user
     def update(self):
         db.session.commit()
-
+    #delete en base de dato
     def delete(self):
         db.session.delete(self)
         db.session.commit()
 
-    def to_dict(self):
+    #se encarga de devolver mi objeto de python en un obj serializable
+    def serialize(self):
+        return {
+            "id": self.id,
+            "username": self.username,
+            "email": self.email,
+            "favorite_characters": {
+                "user_to_fav_characters": self.user_to_fav_characters(),
+                "characters_id_to_fav": self.characters_id_to_fav
+            },
+            "favorite_planets": {
+                "user_to_fav_planets": self.user_to_fav_planets,
+                "planets_id_to_fav": self.planets_id_to_fav
+            },
+            "favorite_vehicles": {
+                "user_to_fav_planets": self.user_to_fav_planets,
+                "planets_id_to_fav": self.planets_id_to_fav
+            }
+        }
+
+    ## CONEXION A FAVORITOS CHARACTERS 
+    def serialize_user_with_favorite_characters(self):
         return {
             "id": self.id,
             "username": self.username,
             "email": self.email,
             "password": self.password,
+            "favorite_characters": self.get_fav_characters()
         }
+
+    def get_fav_characters(self):
+        return list(map(lambda  fav_character:  fav_character.serialize(), self.fav_characters))
+
+    def favorite_character_by_user(self):
+        return len(self.favorite_characters)
+
+# UN USUARIO A MUCHOS FAVORITE CHARACTERS
 ########
 
-"""    
+
+## MUCHOS
+# TABLA PIVOTTE
 class Favorite_Characters(db.Model):
     __tablename__ = 'favorite_characters'
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
-    id_characters = db.Column(db.Integer, db.ForeignKey("characters.id", ondelete='CASCADE'), nullable=False)
+    user_to_fav_characters = db.Column(db.Integer, primary_key=True, nullable=False)
+    characters_id_to_fav = db.Column(db.Integer, db.ForeignKey("characters.id"), primary_key=True, nullable=False)
+
+    #conexion con user 
+    user_id = db.Column(db.Integer, db.ForeignKey(
+        'users.id', ondelete='CASCADE'), nullable=False
+    )
 
     def save(self):
         db.session.add(self)
@@ -47,70 +90,36 @@ class Favorite_Characters(db.Model):
         db.session.delete(self)
         db.session.commit()
 
-    def to_dict(self):
+    def serialize(self):
         return {
-            "user_id": self.user_id,
-            "id_characters": self.id_characters,
+            "user_to_fav_characters": self.user_to_fav_characters,
+            "characters_id_to_fav": self.characters_id_to_fav,
         }
-########
 
-
-class Favorite_Planets(db.Model):
-    __tablename__ = 'favorite_planets'
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
-    id_planets = db.Column(db.Integer, db.ForeignKey("planets.id", ondelete='CASCADE'), nullable=False)
-
-    def save(self):
-        db.session.add(self)
-        db.session.commit()
-
-    def update(self):
-        db.session.commit()
-
-    def delete(self):
-        db.session.delete(self)
-        db.session.commit()
-
-    def to_dict(self):
+"""    def serialize_with_user(self):
         return {
-            "user_id": self.user_id,
-            "id_planets": self.id_planets,
-        }
-########
-
-
-class Favorite_Vehicles(db.Model):
-    __tablename__ = 'favorite_vehicles'
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
-    id_vehicles = db.Column(db.Integer, db.ForeignKey("vehicles.id", ondelete='CASCADE'), nullable=False)
-
-    def save(self):
-        db.session.add(self)
-        db.session.commit()
-
-    def update(self):
-        db.session.commit()
-
-    def delete(self):
-        db.session.delete(self)
-        db.session.commit()
-
-    def to_dict(self):
-        return {
-            "user_id": self.user_id,
-            "id_vehicles": self.id_vehicles,
+            pass
         }"""
+            # MUCHOS A MUCHOS CARACTERES
 ########
 
 
-
+# MUCHOS CHARACTERS
 class Characters(db.Model):
     __tablename__ = 'characters'
     id = db.Column(db.Integer, primary_key=True) 
     name = db.Column(db.String(250), nullable=False)
     gender = db.Column(db.String(250), nullable=False)
     height = db.Column(db.String(250), nullable=False)
+    mass = db.Column(db.String(100), nullable=False)
     hair_color = db.Column(db.String(250), nullable=False)
+    skin_color = db.Column(db.String(100), nullable=False)
+    eye_color = db.Column(db.String(100), nullable=False)
+    birth_year = db.Column(db.String(100), nullable=False)
+    created = db.Column(db.String(100), nullable=False)
+    edited = db.Column(db.String(100), nullable=False)
+    homeworld = db.Column(db.String(100), nullable=False)
+    url = db.Column(db.String(100), nullable=False)
 
     def save(self):
         db.session.add(self)
@@ -123,12 +132,12 @@ class Characters(db.Model):
         db.session.delete(self)
         db.session.commit()
 
-    def to_dict(self):
+    def serialize(self):
         return {
             "id": self.id,
             "name": self.name,
-            "height": self.height,
             "gender": self.gender,
+            "height": self.height,
             "mass": self.mass,
             "hair_color": self.hair_color,
             "skin_color": self.skin_color,
@@ -142,13 +151,15 @@ class Characters(db.Model):
 #########
 
 
-class Planets(db.Model):
-    __tablename__ = 'planets'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(250), nullable=False)
-    climate = db.Column(db.String(250), nullable=False)
-    population = db.Column(db.String(250), nullable=False)
-    terrain = db.Column(db.String(250), nullable=False)
+class Favorite_Planets(db.Model):
+    __tablename__ = 'favorite_planets'
+    user_to_fav_planets = db.Column(db.Integer, primary_key=True)
+    planets_id_to_fav = db.Column(db.Integer, db.ForeignKey("planets.id", ondelete='CASCADE'), nullable=False)
+    
+    #conexion con user
+    user_id = db.Column(db.Integer, db.ForeignKey(
+        'users.id', ondelete='CASCADE'), nullable=False
+    )
 
     def save(self):
         db.session.add(self)
@@ -161,7 +172,44 @@ class Planets(db.Model):
         db.session.delete(self)
         db.session.commit()
 
-    def to_dict(self):
+    def serialize(self):
+        return {
+            "user_to_fav_planets": self.user_to_fav_planets,
+            "planets_id_to_fav": self.planets_id_to_fav,
+        }
+
+########
+
+
+class Planets(db.Model):
+    __tablename__ = 'planets'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250), nullable=False)
+    diameter = db.Column(db.String(250), nullable=False)
+    rotation_period = db.Column(db.String(100), nullable=False)
+    orbital_period = db.Column(db.String(100), nullable=False)
+    gravity = db.Column(db.String(100), nullable=False)
+    population = db.Column(db.String(250), nullable=False)
+    climate = db.Column(db.String(250), nullable=False)
+    terrain = db.Column(db.String(250), nullable=False)
+    surface_water = db.Column(db.String(100), nullable=False)
+    created = db.Column(db.String(100), nullable=False)
+    edited = db.Column(db.String(100), nullable=False)
+    url = db.Column(db.String(100), nullable=False)
+
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def update(self):
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def serialize(self):
         return {
             "id": self.id,
             "name": self.name,
@@ -180,14 +228,15 @@ class Planets(db.Model):
 #########
 
 
+class Favorite_Vehicles(db.Model):
+    __tablename__ = 'favorite_vehicles'
+    user_to_fav_vehicles = db.Column(db.Integer, primary_key=True)
+    vehicles_id_to_fav = db.Column(db.Integer, db.ForeignKey("vehicles.id", ondelete='CASCADE'), nullable=False)
 
-class Vehicles(db.Model):
-    __tablename__ = 'vehicles'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(250), nullable=False)
-    model = db.Column(db.String(250), nullable=False)
-    consumables = db.Column(db.String(250), nullable=False)
-    crew = db.Column(db.String(250), nullable=False)
+    #conexion con user
+    user_id = db.Column(db.Integer, db.ForeignKey(
+        'users.id', ondelete='CASCADE'), nullable=False
+    )
 
     def save(self):
         db.session.add(self)
@@ -201,6 +250,45 @@ class Vehicles(db.Model):
         db.session.commit()
 
     def to_dict(self):
+        return {
+            "user_to_fav_vehicles": self.user_to_fav_vehicles,
+            "vehicles_id_to_fav": self.vehicles_id_to_fav,
+        }
+########
+
+
+
+class Vehicles(db.Model):
+    __tablename__ = 'vehicles'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250), nullable=False)
+    model = db.Column(db.String(250), nullable=False)
+    starship_class = db.Column(db.String(250), nullable=False)
+    manufacturer = db.Column(db.String(250), nullable=False)
+    cost_in_credits = db.Column(db.String(250), nullable=False)
+    length = db.Column(db.String(250), nullable=False)
+    passengers = db.Column(db.String(250), nullable=False)
+    max_armosphering_speed = db.Column(db.String(250), nullable=False)
+    hyperdrive_rating = db.Column(db.String(250), nullable=False)
+    cargo_capacity = db.Column(db.String(250), nullable=False)
+    consumables = db.Column(db.String(250), nullable=False)
+    pilots = db.Column(db.String(250), nullable=False)
+    created = db.Column(db.String(250), nullable=False)
+    edited = db.Column(db.String(250), nullable=False)
+    url = db.Column(db.String(250), nullable=False)
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def update(self):
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def serialize(self):
         return {
             "id": self.id,
             "name": self.name,
@@ -219,4 +307,3 @@ class Vehicles(db.Model):
             "edited": self.edited,
             "url": self.url,
         }
-

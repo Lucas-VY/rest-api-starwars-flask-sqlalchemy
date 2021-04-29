@@ -1,0 +1,50 @@
+{
+    "name": "Lucas",
+    "height": "1,76",
+    "mass": "adgaga",
+    "hair_color": "black",
+    "skin_color": "white",
+    "eye_color": "brown",
+    "birth_year": "asdasda",
+    "gender": "male",
+    "created": "asdasd",
+    "edited": "adfad",
+    "homeworld": "asfas",
+    "url": "asfas"
+}
+
+
+vehicles
+{
+    "name": "Millenial Falcon",
+    "model": "asdad",
+    "starship_class": "asfas",
+    "manufacturer": "asfas",
+    "cost_in_credits": "saff",
+    "length": "asfa",
+    "passengers": "asfasf",
+    "max_armosphering_speed": "asf",
+    "hyperdrive_rating": "asfas",
+    "cargo_capacity": "asfasfa",
+    "consumables": "ahfh",
+    "pilots": "adgda",
+    "created": "adgaghfs",
+    "edited": "adgahffhs",
+    "url": "adgadfdh"
+}
+
+planets
+{
+    "name": "Chile",
+    "diameter": "sgsdgsdg",
+    "rotation_period": "sdgsdg",
+    "orbital_period": "sdgfdh",
+    "gravity": "afdsdg",
+    "population": "dfhdfh",
+    "climate": "afsrhwr",
+    "terrain": "sdgshr",
+    "surface_water": "fdhdr",
+    "created": "fhshsh",
+    "edited": "sfhshsdf",
+    "url": "adhafh"
+}
