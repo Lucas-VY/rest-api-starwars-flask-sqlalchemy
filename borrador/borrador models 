@@ -6,12 +6,14 @@ db = SQLAlchemy()
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), nullable=False, unique=True)
-    password = db.Column(db.String(100), nullable=False)
+    usernamename = db.Column(db.String(100), nullable=False, unique=True)
+    password = db.Column(db.String(100), nullable=False, unique=False )
     email = db.Column(db.String(100), nullable=False, unique=True)
-    ###
-    favorites = db.relationship('Favorites', cascade = 'all, delete', backref = 'user', uselist = False)
 
+    ## RELACION CON LA TABLA PIVOTTE DE UN(USER) A MUCHOS(FAV)
+    fav_characters = db.relationship('Favorite_Characters', cascade="all, delete", backref="user")
+    fav_planets = db.relationship('Favorite_Planets', cascade="all, delete", backref="user")
+    fav_vehicles = db.relationship('Favorite_Vehicles', cascade="all, delete", backref="user")
     
     ## metodo para guardar en base de dato
     def save(self):
@@ -31,38 +33,53 @@ class User(db.Model):
             "id": self.id,
             "username": self.username,
             "email": self.email,
-            # password no va por prevencion de privacidad
+            "favorite_characters": {
+                "user_to_fav_characters": self.user_to_fav_characters(),
+                "characters_id_to_fav": self.characters_id_to_fav
+            },
+            "favorite_planets": {
+                "user_to_fav_planets": self.user_to_fav_planets,
+                "planets_id_to_fav": self.planets_id_to_fav
+            },
+            "favorite_vehicles": {
+                "user_to_fav_planets": self.user_to_fav_planets,
+                "planets_id_to_fav": self.planets_id_to_fav
+            }
         }
 
-    ## CONEXION A ALL FAVORITOS 
-    def serialize_user_with_favorite(self):
+    ## CONEXION A FAVORITOS CHARACTERS 
+    def serialize_user_with_favorite_characters(self):
         return {
             "id": self.id,
             "username": self.username,
             "email": self.email,
-            "favorites": {
-                "characters": self.favorites.characters.serialize(),
-                "planets": self.favorites.planets.serialize(),
-                "vehicles": self.favorites.vehicles.serialize()
-            }
+            "password": self.password,
+            "favorite_characters": self.get_fav_characters()
         }
+
+    def get_fav_characters(self):
+        return list(map(lambda  fav_character:  fav_character.serialize(), self.fav_characters))
+
+    def favorite_character_by_user(self):
+        return len(self.favorite_characters)
 
 # UN USUARIO A MUCHOS FAVORITE CHARACTERS
 ########
 
 
+## MUCHOS
+# TABLA PIVOTTE
+class Favorite_Characters(db.Model):
+    __tablename__ = 'favorite_characters'
+    user_to_fav_characters = db.Column(db.Integer, primary_key=True, nullable=False)
+    characters_id_to_fav = db.Column(db.Integer, primary_key=True, nullable=False)
 
+    #conexion con user \--< favorite_characters
+    user_id = db.Column(db.Integer, db.ForeignKey(
+        'users.id', ondelete='CASCADE'), nullable=False
+    )
 
-# TABLA GENERAL FAVORITOS
-class Favorites(db.Model):
-    __tablename__ = 'favorites'
-    ## ID TABLA
-    id = db.Column(db.Integer, primary_key=True)
-    users_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
- ## RELACION CON LA TABLA  ALL_FAVS a TABLAS PIVOTTE CON CHARACTERS, PLANETS y VEHICLES
-    characters = db.relationship('Characters', secondary='favorites_characters')
-    planets = db.relationship('Planets', secondary='favorites_planets')
-    vehicles = db.relationship('Vehicles', secondary='favorites_vehicles')
+    character_id = db.Column(db.Integer, db.ForeignKey('characters.id', ondelete='CASCADE'), nullable=False) 
 
     def save(self):
         db.session.add(self)
@@ -77,58 +94,17 @@ class Favorites(db.Model):
 
     def serialize(self):
         return {
-            "id": self.id,
-            "user": {
-                "id":self.user.id,
-                "username": self.user.username
-            },
-            "characters": self.get_fav_characters(),
-            "planets": self.get_fav_planets(),
-            "vehicles": self.get_fav_vehicles()
+            "user_to_fav_characters": self.user_to_fav_characters,
+            "characters_id_to_fav": self.characters_id_to_fav,
         }
-    
-    def get_fav_characters(self):
-        return list(map(lambda characters: characters.serialize(), self.characters))
-    
-    def get_fav_planets(self):
-        return list(map(lambda planets: planets.serialize(), self.planets))
-
-    def get_fav_vehicles(self):
-        return list(map(lambda vehicles: vehicles.serialize(), self.vehicles)) 
 
 
 
-######### ------<
 
-
-
-#######
-# TABLAS PIVOTTE
-class Favorites_Characters(db.Model):
-    __tablename__ = 'favorites_characters'
-    id_favorites = db.Column(db.Integer, db.ForeignKey('favorites.id'), primary_key=True)
-    characters_id = db.Column(db.Integer, db.ForeignKey('characters.id'), primary_key=True)
-
-########
-
-class Favorites_Planets(db.Model):
-    __tablename__ = 'favorites_planets'
-    id_favorites = db.Column(db.Integer, db.ForeignKey('favorites.id'), primary_key=True)
-    planets_id = db.Column(db.Integer, db.ForeignKey('planets.id'), primary_key=True)
-    
-###########
-
-class Favorites_Vehicles(db.Model):
-    __tablename__ = 'favorites_vehicles'
-    id_favorites = db.Column(db.Integer, db.ForeignKey('favorites.id'), primary_key=True)
-    vehicles_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), primary_key=True)
-
+            # MUCHOS A MUCHOS CARACTERES
 ########
 
 
-
-
-##  >--------
 # MUCHOS CHARACTERS
 class Characters(db.Model):
     __tablename__ = 'characters'
@@ -145,8 +121,8 @@ class Characters(db.Model):
     edited = db.Column(db.String(100), nullable=False)
     homeworld = db.Column(db.String(100), nullable=False)
     url = db.Column(db.String(100), nullable=False)
-    #Link tabla pivotte
-    favorites = db.relationship('Favorites', secondary='favorites_characters', backref='character')
+
+    link_with_fav_character = db.relationship('users.id', secondary='')
 
     def save(self):
         db.session.add(self)
@@ -178,7 +154,36 @@ class Characters(db.Model):
 #########
 
 
+class Favorite_Planets(db.Model):
+    __tablename__ = 'favorite_planets'
+    user_to_fav_planets = db.Column(db.Integer, primary_key=True)
+    planets_id_to_fav = db.Column(db.Integer, db.ForeignKey("planets.id", ondelete='CASCADE'), nullable=False)
+    
+    #conexion con user
+    user_id = db.Column(db.Integer, db.ForeignKey(
+        'users.id', ondelete='CASCADE'), nullable=False
+    )
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def update(self):
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def serialize(self):
+        return {
+            "user_to_fav_planets": self.user_to_fav_planets,
+            "planets_id_to_fav": self.planets_id_to_fav,
+        }
+
 ########
+
+
 class Planets(db.Model):
     __tablename__ = 'planets'
     id = db.Column(db.Integer, primary_key=True)
@@ -194,7 +199,7 @@ class Planets(db.Model):
     created = db.Column(db.String(100), nullable=False)
     edited = db.Column(db.String(100), nullable=False)
     url = db.Column(db.String(100), nullable=False)
-    favorites = db.relationship('Favorites', secondary='favorites_planets', backref='planet')
+
 
     def save(self):
         db.session.add(self)
@@ -225,6 +230,37 @@ class Planets(db.Model):
         }
 #########
 
+
+class Favorite_Vehicles(db.Model):
+    __tablename__ = 'favorite_vehicles'
+    user_to_fav_vehicles = db.Column(db.Integer, primary_key=True)
+    vehicles_id_to_fav = db.Column(db.Integer, db.ForeignKey("vehicles.id", ondelete='CASCADE'), nullable=False)
+
+    #conexion con user
+    user_id = db.Column(db.Integer, db.ForeignKey(
+        'users.id', ondelete='CASCADE'), nullable=False
+    )
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def update(self):
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def to_dict(self):
+        return {
+            "user_to_fav_vehicles": self.user_to_fav_vehicles,
+            "vehicles_id_to_fav": self.vehicles_id_to_fav,
+        }
+########
+
+
+
 class Vehicles(db.Model):
     __tablename__ = 'vehicles'
     id = db.Column(db.Integer, primary_key=True)
@@ -243,8 +279,6 @@ class Vehicles(db.Model):
     created = db.Column(db.String(250), nullable=False)
     edited = db.Column(db.String(250), nullable=False)
     url = db.Column(db.String(250), nullable=False)
-    favorites = db.relationship('Favorites', secondary='favorites_vehicles', backref='vehicle')
-
 
     def save(self):
         db.session.add(self)
@@ -276,5 +310,3 @@ class Vehicles(db.Model):
             "edited": self.edited,
             "url": self.url,
         }
-
-
