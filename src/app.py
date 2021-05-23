@@ -6,7 +6,7 @@ from flask import Flask, json, jsonify, request, render_template
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
 from flask_cors import CORS
-from models import db, User, Characters, Favorites_Characters , Planets, Favorites_Planets, Vehicles, Favorites_Vehicles, Favorites
+from models import db, User, Favorites, Characters, Favorites_Characters , Planets, Favorites_Planets, Vehicles, Favorites_Vehicles
 
 
 app = Flask(__name__)
@@ -15,11 +15,11 @@ app.config['DEBUG'] = True
 app.config['ENV'] = 'development'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///database.db"
-app.config['JWT_SECRET_KEY'] = ""
+app.config['JWT_SECRET_KEY'] = "70cf96676b04c7e8c6e6b4151278486d"
 
 
 db.init_app(app)
-Migrate(app, db) 
+Migrate(app, db)  #pipenv run init/migrate/upgrade
 CORS(app)
 jwt = JWTManager(app)
 manager = Manager(app)
@@ -31,7 +31,7 @@ def main():
     return render_template('index.html')
 
 ## REGISTER ####
-@app.route('/register', methods = ['POST'])
+@app.route('/register', methods=['POST'])
 def get_register():
     username = request.json.get('username')
     password = request.json.get('password')
@@ -51,7 +51,9 @@ def get_register():
         "success": "user created successfully",
         "user": user.serialize()
     }), 201
-#### PROFILE
+
+
+#### PROFILE #######
 @app.route('/profile')
 @jwt_required()
 def get_profile():
@@ -62,7 +64,7 @@ def get_profile():
     }), 200
 
 ## LOGIN#######
-@app.route('/login', methods = ['POST'])
+@app.route('/login', methods=['POST'])
 def get_login():
     username = request.json.get('username')
     password = request.json.get('password')
@@ -115,9 +117,12 @@ def get_users(id=None):
         favorites = Favorites()
         new_user.favorites = favorite
         new_user.save()
-        return jsonify(new_user.serialize())
+        return jsonify(
+            {"sucess": "User Created Sucessfully",
+            "user": new_user.serialize()}
+            ), 201
 
-
+    ## NO LO USO
     if request.method == 'PUT':
         pass 
 
