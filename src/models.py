@@ -9,10 +9,8 @@ class User(db.Model):
     username = db.Column(db.String(100), nullable=False, unique=True)
     password = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False, unique=True)
-    ###
     favorites = db.relationship('Favorites', cascade = 'all, delete', backref = 'user', uselist = False)
 
-    
     ## metodo para guardar en base de dato
     def save(self):
         db.session.add(self)
@@ -47,7 +45,6 @@ class User(db.Model):
             }
         }
 
-# UN USUARIO A MUCHOS FAVORITE CHARACTERS
 ########
 
 

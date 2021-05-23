@@ -1,9 +1,13 @@
+#JWT
+from flask_jwt_extended import JWTManager, get_jwt_identity, create_access_token, jwt_required
+from werkzeug.security import generate_password_hash, check_password_hash
+
 from flask import Flask, json, jsonify, request, render_template
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
 from flask_cors import CORS
 from models import db, User, Characters, Favorites_Characters , Planets, Favorites_Planets, Vehicles, Favorites_Vehicles, Favorites
-#JWT
+
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False #no errores si incluyo o no un / en una ruta ó endpoints
@@ -11,19 +15,69 @@ app.config['DEBUG'] = True
 app.config['ENV'] = 'development'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///database.db"
+app.config['JWT_SECRET_KEY'] = ""
 
 
 db.init_app(app)
-Migrate(app, db)
+Migrate(app, db) 
 CORS(app)
+jwt = JWTManager(app)
 manager = Manager(app)
 manager.add_command("db", MigrateCommand)
-
 
 
 @app.route('/')
 def main():
     return render_template('index.html')
+
+## REGISTER ####
+@app.route('/register', methods = ['POST'])
+def get_register():
+    username = request.json.get('username')
+    password = request.json.get('password')
+
+    if not username:
+        return jsonify({"fail": "the username is required"}), 400
+    if not password:
+        return jsonify({"fail": "the password is required"}), 400
+    user = User.query.filter_by(username = username).first()
+    if user: return jsonify({"fail": "the username is already taken, try a new one"})
+
+    user = User()
+    user.username = username
+    user.password = generate_password_hash(password)
+    user.save()
+    return jsonify({
+        "success": "user created successfully",
+        "user": user.serialize()
+    }), 201
+#### PROFILE
+@app.route('/profile')
+@jwt_required()
+def get_profile():
+    current_user = get_jwt_identity()
+    return jsonify({
+        "success": "private route",
+        "user" current_user
+    }), 200
+
+## LOGIN#######
+@app.route('/login', method = ['POST'])
+def get_login():
+    username = request.json.get('username')
+    password = request.json.get('password')
+    if not username:
+        return jsonify({"fail": "Username required to login"}), 400
+    if not password:
+        return jsonify({"fail": "password required to login"}), 400
+    user = User.query.filter_by(username = username).first()
+    if not user:
+        return jsonify({"fail": "the username or password is incorrect"}), 401
+    if not check_password_hash(user.password, password):
+        return jsonify({"fail": "the username or password is incorrect"}), 401
+
+    access_token = create_access_token(identity = username)
+    return jsonify({"token": access_token}), 200
 
 
 #USERS #######
