@@ -1,4 +1,4 @@
-#JWT
+#JWT 
 from flask_jwt_extended import JWTManager, get_jwt_identity, create_access_token, jwt_required
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -30,6 +30,10 @@ manager.add_command("db", MigrateCommand)
 def main():
     return render_template('index.html')
 
+## En INSOMNIA/POSTMAN
+## PARA AGREGAR EL TOKEN AL SER GENERADO
+# VAS A HEADER CREAS un NEW HEADER "Authorization" en Value pones Bearer "pegar token"
+
 ## REGISTER ####
 @app.route('/register', methods=['POST'])
 def get_register():
@@ -40,8 +44,9 @@ def get_register():
         return jsonify({"fail": "the username is required"}), 400
     if not password:
         return jsonify({"fail": "the password is required"}), 400
-    user = User.query.filter_by(username = username).first()
-    if user: return jsonify({"fail": "the username is already taken, try a new one"})
+    user = User.query.filter_by(username = username).first() # busca primer regitro con ese nombre
+    if user: 
+        return jsonify({"fail": "the username is already taken, try a new one"})
 
     user = User()
     user.username = username
@@ -57,7 +62,7 @@ def get_register():
 @app.route('/profile')
 @jwt_required()
 def get_profile():
-    current_user = get_jwt_identity()
+    current_user = get_jwt_identity() ##muestra usuario actual usando la ruta privada
     return jsonify({
         "success": "private route",
         "user": current_user
@@ -68,10 +73,12 @@ def get_profile():
 def get_login():
     username = request.json.get('username')
     password = request.json.get('password')
+
     if not username:
         return jsonify({"fail": "Username required to login"}), 400
     if not password:
         return jsonify({"fail": "password required to login"}), 400
+
     user = User.query.filter_by(username = username).first()
     if not user:
         return jsonify({"fail": "the username or password is incorrect"}), 401
