@@ -50,7 +50,7 @@ def get_register():
 
     user = User()
     user.username = username
-    user.password = generate_password_hash(password)
+    user.password = generate_password_hash(password) ## encripta password
     user.save()
     return jsonify({
         "success": "user created successfully",
@@ -82,6 +82,7 @@ def get_login():
     user = User.query.filter_by(username = username).first()
     if not user:
         return jsonify({"fail": "the username or password is incorrect"}), 401
+        ## si no coinciden el user.password donde guardo el hash y el password, quiere decir que no eres el dueño de la cuenta
     if not check_password_hash(user.password, password):
         return jsonify({"fail": "the username or password is incorrect"}), 401
 
