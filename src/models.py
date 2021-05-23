@@ -8,7 +8,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), nullable=False, unique=True)
     password = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(100), nullable=False, unique=True)
+
     favorites = db.relationship('Favorites', cascade = 'all, delete', backref = 'user', uselist = False)
 
     ## metodo para guardar en base de dato
@@ -23,12 +23,14 @@ class User(db.Model):
         db.session.delete(self)
         db.session.commit()
 
+    def check_password(self, password):
+        return safe_str_cmp()
+
     #se encarga de devolver mi objeto de python en un obj serializable
     def serialize(self):
         return {
             "id": self.id,
             "username": self.username,
-            "email": self.email,
             # password no va por prevencion de privacidad
         }
 
@@ -37,7 +39,6 @@ class User(db.Model):
         return {
             "id": self.id,
             "username": self.username,
-            "email": self.email,
             "favorites": {
                 "characters": self.favorites.characters.serialize(),
                 "planets": self.favorites.planets.serialize(),
@@ -56,6 +57,7 @@ class Favorites(db.Model):
     ## ID TABLA
     id = db.Column(db.Integer, primary_key=True)
     users_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+
  ## RELACION CON LA TABLA  ALL_FAVS a TABLAS PIVOTTE CON CHARACTERS, PLANETS y VEHICLES
     characters = db.relationship('Characters', secondary='favorites_characters')
     planets = db.relationship('Planets', secondary='favorites_planets')
@@ -138,10 +140,7 @@ class Characters(db.Model):
     skin_color = db.Column(db.String(100), nullable=False)
     eye_color = db.Column(db.String(100), nullable=False)
     birth_year = db.Column(db.String(100), nullable=False)
-    created = db.Column(db.String(100), nullable=False)
-    edited = db.Column(db.String(100), nullable=False)
     homeworld = db.Column(db.String(100), nullable=False)
-    url = db.Column(db.String(100), nullable=False)
     #Link tabla pivotte
     favorites = db.relationship('Favorites', secondary='favorites_characters', backref='character')
 
@@ -167,10 +166,7 @@ class Characters(db.Model):
             "skin_color": self.skin_color,
             "eye_color": self.eye_color,
             "birth_year": self.birth_year,
-            "created": self.created,
-            "edited": self.edited,
             "homeworld": self.homeworld,
-            "url": self.url,
         }
 #########
 
@@ -188,9 +184,6 @@ class Planets(db.Model):
     climate = db.Column(db.String(250), nullable=False)
     terrain = db.Column(db.String(250), nullable=False)
     surface_water = db.Column(db.String(100), nullable=False)
-    created = db.Column(db.String(100), nullable=False)
-    edited = db.Column(db.String(100), nullable=False)
-    url = db.Column(db.String(100), nullable=False)
     favorites = db.relationship('Favorites', secondary='favorites_planets', backref='planet')
 
     def save(self):
@@ -216,9 +209,6 @@ class Planets(db.Model):
             "climate": self.climate,
             "terrain": self.terrain,
             "surface_water": self.surface_water,
-            "created": self.created,
-            "edited": self.edited,
-            "url": self.url,
         }
 #########
 
@@ -231,15 +221,13 @@ class Vehicles(db.Model):
     manufacturer = db.Column(db.String(250), nullable=False)
     cost_in_credits = db.Column(db.String(250), nullable=False)
     length = db.Column(db.String(250), nullable=False)
+    crew = db.Column(db.String(250), nullable=False)
     passengers = db.Column(db.String(250), nullable=False)
     max_armosphering_speed = db.Column(db.String(250), nullable=False)
     hyperdrive_rating = db.Column(db.String(250), nullable=False)
     cargo_capacity = db.Column(db.String(250), nullable=False)
     consumables = db.Column(db.String(250), nullable=False)
     pilots = db.Column(db.String(250), nullable=False)
-    created = db.Column(db.String(250), nullable=False)
-    edited = db.Column(db.String(250), nullable=False)
-    url = db.Column(db.String(250), nullable=False)
     favorites = db.relationship('Favorites', secondary='favorites_vehicles', backref='vehicle')
 
 
@@ -269,9 +257,6 @@ class Vehicles(db.Model):
             "cargo_capacity": self.cargo_capacity,
             "consumables": self.consumables,
             "pilots": self.pilots,
-            "created": self.created,
-            "edited": self.edited,
-            "url": self.url,
         }
 
 

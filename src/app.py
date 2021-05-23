@@ -58,11 +58,11 @@ def get_profile():
     current_user = get_jwt_identity()
     return jsonify({
         "success": "private route",
-        "user" current_user
+        "user": current_user
     }), 200
 
 ## LOGIN#######
-@app.route('/login', method = ['POST'])
+@app.route('/login', methods = ['POST'])
 def get_login():
     username = request.json.get('username')
     password = request.json.get('password')
@@ -223,17 +223,14 @@ def add_new_character():
     request_body = request.data
     new_character = Characters()
     new_character.name = request.json.get('name')
+    new_character.gender = request.json.get('gender')
     new_character.height = request.json.get('height')
     new_character.mass = request.json.get('mass')
     new_character.hair_color = request.json.get('hair_color')
     new_character.skin_color = request.json.get('skin_color')
     new_character.eye_color = request.json.get('eye_color')
     new_character.birth_year = request.json.get('birth_year')
-    new_character.gender = request.json.get('gender')
-    new_character.created = request.json.get('created')
-    new_character.edited = request.json.get('edited')
     new_character.homeworld = request.json.get('homeworld')
-    new_character.url = request.json.get('url')
 
     new_character.save()
     return jsonify(new_character.serialize())
@@ -285,9 +282,6 @@ def add_new_planet():
     new_planet.climate = request.json.get('climate')
     new_planet.terrain = request.json.get('terrain')
     new_planet.surface_water = request.json.get('surface_water')
-    new_planet.created = request.json.get('created')
-    new_planet.edited = request.json.get('edited')
-    new_planet.url = request.json.get('url')
 
     new_planet.save()
     return jsonify(new_planet.serialize())
@@ -342,9 +336,7 @@ def add_new_vehicle():
     new_vehicle.cargo_capacity = request.json.get('cargo_capacity')
     new_vehicle.consumables = drequest.json.get('consumables')
     new_vehicle.pilots = request.json.get('pilots')
-    new_vehicle.created = request.json.get('created')
-    new_vehicle.edited = request.json.get('edited')
-    new_vehicle.url = request.json.get('url')
+
 
     new_vehicle.save()
     return jsonify(new_vehicle.seserialize())

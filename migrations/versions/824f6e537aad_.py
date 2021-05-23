@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 0f33696556a4
+Revision ID: 824f6e537aad
 Revises: 
-Create Date: 2021-05-02 15:30:38.978907
+Create Date: 2021-05-23 17:36:51.317536
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '0f33696556a4'
+revision = '824f6e537aad'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -28,10 +28,7 @@ def upgrade():
     sa.Column('skin_color', sa.String(length=100), nullable=False),
     sa.Column('eye_color', sa.String(length=100), nullable=False),
     sa.Column('birth_year', sa.String(length=100), nullable=False),
-    sa.Column('created', sa.String(length=100), nullable=False),
-    sa.Column('edited', sa.String(length=100), nullable=False),
     sa.Column('homeworld', sa.String(length=100), nullable=False),
-    sa.Column('url', sa.String(length=100), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('planets',
@@ -45,18 +42,13 @@ def upgrade():
     sa.Column('climate', sa.String(length=250), nullable=False),
     sa.Column('terrain', sa.String(length=250), nullable=False),
     sa.Column('surface_water', sa.String(length=100), nullable=False),
-    sa.Column('created', sa.String(length=100), nullable=False),
-    sa.Column('edited', sa.String(length=100), nullable=False),
-    sa.Column('url', sa.String(length=100), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('users',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('username', sa.String(length=100), nullable=False),
     sa.Column('password', sa.String(length=100), nullable=False),
-    sa.Column('email', sa.String(length=100), nullable=False),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('email'),
     sa.UniqueConstraint('username')
     )
     op.create_table('vehicles',
@@ -67,15 +59,13 @@ def upgrade():
     sa.Column('manufacturer', sa.String(length=250), nullable=False),
     sa.Column('cost_in_credits', sa.String(length=250), nullable=False),
     sa.Column('length', sa.String(length=250), nullable=False),
+    sa.Column('crew', sa.String(length=250), nullable=False),
     sa.Column('passengers', sa.String(length=250), nullable=False),
     sa.Column('max_armosphering_speed', sa.String(length=250), nullable=False),
     sa.Column('hyperdrive_rating', sa.String(length=250), nullable=False),
     sa.Column('cargo_capacity', sa.String(length=250), nullable=False),
     sa.Column('consumables', sa.String(length=250), nullable=False),
     sa.Column('pilots', sa.String(length=250), nullable=False),
-    sa.Column('created', sa.String(length=250), nullable=False),
-    sa.Column('edited', sa.String(length=250), nullable=False),
-    sa.Column('url', sa.String(length=250), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('favorites',
